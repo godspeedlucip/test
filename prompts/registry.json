@@ -1,0 +1,39 @@
+{
+  "prompts": [
+    {
+      "prompt_name": "ask_paper",
+      "version": "v1",
+      "status": "active",
+      "owner": "research-agent",
+      "change_log": "Initial baseline prompt"
+    },
+    {
+      "prompt_name": "compare_papers",
+      "version": "v1",
+      "status": "active",
+      "owner": "research-agent",
+      "change_log": "Initial baseline prompt"
+    },
+    {
+      "prompt_name": "judge_agent_trajectory",
+      "version": "v1",
+      "status": "active",
+      "owner": "research-agent",
+      "change_log": "Initial baseline prompt"
+    },
+    {
+      "prompt_name": "judge_answer_quality",
+      "version": "v1",
+      "status": "active",
+      "owner": "research-agent",
+      "change_log": "Initial baseline prompt"
+    },
+    {
+      "prompt_name": "related_work",
+      "version": "v1",
+      "status": "active",
+      "owner": "research-agent",
+      "change_log": "Initial baseline prompt"
+    }
+  ]
+}

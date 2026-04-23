@@ -1,9 +1,11 @@
-﻿from pydantic import BaseModel
+from pydantic import BaseModel
 
 from domain.context import RequestContext
 from domain.observability import ObservabilityEvent
+from integrations import get_java_client
+from integrations.java_client import JavaClientError, ReportObservabilityEventRequest
 from observability.recorder import get_recorder
-from tools.base import BaseToolHandler, success_result
+from tools.base import BaseToolHandler, failed_result, make_tool_error, success_result, wrap_exception
 
 
 class RecordObservabilityEventInput(BaseModel):
@@ -21,8 +23,30 @@ class RecordObservabilityEventHandler(BaseToolHandler):
     output_model = RecordObservabilityEventOutputData
 
     def run(self, payload: RecordObservabilityEventInput):
-        get_recorder().record(payload.event)
-        return success_result(tool_name=self.tool_name, data=RecordObservabilityEventOutputData(recorded=True))
+        try:
+            get_recorder().record(payload.event)
+            get_java_client().report_observability_event(
+                ReportObservabilityEventRequest(
+                    trace_id=payload.event.trace_id,
+                    event_type=payload.event.event_type,
+                    payload=payload.event.payload,
+                    idempotency_key=payload.context.request_id,
+                )
+            )
+            return success_result(tool_name=self.tool_name, data=RecordObservabilityEventOutputData(recorded=True))
+        except JavaClientError as exc:
+            return failed_result(
+                tool_name=self.tool_name,
+                error=make_tool_error(
+                    code="java_client_error",
+                    message=str(exc),
+                    error_layer=exc.error_layer,
+                    detail={"status_code": exc.status_code},
+                    retryable=exc.__class__.__name__.endswith("RetryableError"),
+                ),
+            )
+        except Exception as exc:  # pragma: no cover
+            return failed_result(tool_name=self.tool_name, error=wrap_exception(self.tool_name, exc))
 
 
 record_observability_event_tool = RecordObservabilityEventHandler()

@@ -127,3 +127,41 @@ python -m app.main
 - `analyze_table` supports `csv`, `tsv`, and `xlsx`.
 - `generate_plot` supports `line`, `bar`, `scatter`, and `histogram`.
 - `execute_notebook_template` accepts `template_path` or `notebook_json`, injects parameters, executes code cells sequentially, and outputs an executed notebook artifact.
+
+## Java Client Contract (Commit 2)
+
+`integrations/java_client.py` now provides a unified platform contract layer:
+
+- DTOs:
+  - `SavePaperToLibraryRequest/Response`
+  - `ListLibraryPapersRequest/Response`
+  - `AddPaperNoteRequest/Response`
+  - `RecordFileArtifactRequest/Response`
+  - `UpdateTaskStatusRequest/Response`
+  - `ReportObservabilityEventRequest/Response`
+- Client capabilities: `base_url`, `timeout`, `Authorization` header, retry for retryable errors only.
+- Error model:
+  - `JavaClientError`
+  - `JavaClientRetryableError`
+  - `JavaClientNonRetryableError`
+- Side-effect requests support `idempotency_key` and map failures to `ToolError.error_layer` (`network`/`storage`).
+
+Environment variables:
+
+- `JAVA_CLIENT_BASE_URL` (set to enable HTTP Java client; otherwise in-memory mock is used)
+- `JAVA_CLIENT_TIMEOUT_SECONDS`
+- `JAVA_CLIENT_AUTH_HEADER`
+- `JAVA_CLIENT_MAX_RETRIES`
+- `JAVA_CLIENT_RETRY_BACKOFF_SECONDS`
+
+## Prompt Registry Governance (Commit 2)
+
+Prompt selection is now registry-driven instead of filename max-version:
+
+- Registry file: `prompts/registry.json`
+- Metadata per prompt version includes: `prompt_name`, `version`, `status`, `owner`, `change_log`
+- Exactly one `active` version per prompt is required
+- Default loading selects active version
+- `deprecated` versions are never selected by default
+- Explicit version loading is supported (including deprecated)
+- Illegal registry config (missing active / duplicate entries / missing prompt file) raises config errors
