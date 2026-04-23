@@ -1,5 +1,22 @@
-﻿from graph.workflows.compare_export_workflow import build_compare_export_workflow
+from __future__ import annotations
+
+from fastapi import Depends, FastAPI
+
+from app.dependencies import get_settings
+from graph.workflows.compare_export_workflow import build_compare_export_workflow
 from graph.workflows.qa_workflow import build_qa_workflow
+
+app = FastAPI(title="research_agent", version="0.1.0")
+
+
+@app.get("/health")
+def health(settings=Depends(get_settings)):
+    return {"status": "ok", "app_name": settings.app_name}
+
+
+@app.get("/observability/health")
+def observability_health():
+    return {"status": "ok"}
 
 
 def run_demo() -> None:
@@ -27,4 +44,6 @@ def run_demo() -> None:
 
 
 if __name__ == "__main__":
-    run_demo()
+    import uvicorn
+
+    uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=False)
