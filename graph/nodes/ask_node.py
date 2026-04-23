@@ -9,7 +9,7 @@ def ask_node(state: dict):
         ctx = RequestContext.model_validate(s.get("context", {"user_id": "anonymous"}))
         doc_id = (s.get("document_ids") or [None])[0]
         if not doc_id:
-            return {"errors": s.get("errors", []) + ["ask_node: missing document_id"]}
+            raise RuntimeError("ask_node: missing document_id")
         result = ask_paper_tool.execute(
             AskPaperInput(
                 context=ctx,
@@ -20,7 +20,7 @@ def ask_node(state: dict):
             )
         )
         if not result.success:
-            return {"errors": s.get("errors", []) + [result.error.message]}
+            raise RuntimeError(result.error.message if result.error else "ask_paper failed")
         return {
             "answer": result.data["answer"],
             "evidences": result.data["evidences"],

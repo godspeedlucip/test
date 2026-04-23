@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import time
 import traceback
@@ -9,6 +9,7 @@ from typing import Any
 from pydantic import BaseModel
 
 from domain.base import ToolError, ToolMeta, ToolResult
+from observability.emitter import get_emitter
 from observability.recorder import get_recorder
 
 
@@ -38,6 +39,26 @@ def wrap_exception(tool_name: str, exc: Exception, error_layer: str = "tool") ->
     )
 
 
+def _extract_model_prompt(parsed_payload: BaseModel) -> tuple[str | None, str | None, str | None]:
+    model_name: str | None = None
+    prompt_name: str | None = None
+    prompt_version: str | None = None
+
+    model = getattr(parsed_payload, "model", None)
+    if model is not None:
+        model_name = getattr(model, "model_name", None) if not isinstance(model, dict) else model.get("model_name")
+
+    prompt = getattr(parsed_payload, "prompt", None)
+    if prompt is not None:
+        if isinstance(prompt, dict):
+            prompt_name = prompt.get("prompt_name")
+            prompt_version = prompt.get("prompt_version")
+        else:
+            prompt_name = getattr(prompt, "prompt_name", None)
+            prompt_version = getattr(prompt, "prompt_version", None)
+    return model_name, prompt_name, prompt_version
+
+
 class BaseToolHandler(ABC):
     tool_name: str
     input_model: type[BaseModel]
@@ -45,6 +66,7 @@ class BaseToolHandler(ABC):
 
     def __init__(self) -> None:
         self.recorder = get_recorder()
+        self.emitter = get_emitter()
 
     @abstractmethod
     def run(self, payload: BaseModel) -> ToolResult:
@@ -52,33 +74,40 @@ class BaseToolHandler(ABC):
 
     def execute(self, payload: BaseModel | dict[str, Any]) -> ToolResult:
         started_ms = int(time.time() * 1000)
-        trace_id = None
         parsed_payload: BaseModel
         if isinstance(payload, dict):
             parsed_payload = self.input_model.model_validate(payload)
         else:
             parsed_payload = payload
-        context = getattr(parsed_payload, "context", None)
-        if context is not None:
-            trace_id = context.request_id or str(uuid.uuid4())
-        else:
-            trace_id = str(uuid.uuid4())
 
-        started_event = self.recorder.emit(
+        context = getattr(parsed_payload, "context", None)
+        trace_id = context.request_id if context is not None and context.request_id else str(uuid.uuid4())
+        model_name, prompt_name, prompt_version = _extract_model_prompt(parsed_payload)
+
+        started_event = self.emitter.emit(
             event_type="tool_called",
             trace_id=trace_id,
-            payload={"tool_name": self.tool_name},
+            payload={
+                "tool_name": self.tool_name,
+                "model_name": model_name,
+                "prompt_name": prompt_name,
+                "prompt_version": prompt_version,
+            },
         )
         try:
             result = self.run(parsed_payload)
-            duration_ms = int(time.time() * 1000) - started_ms
+            latency_ms = int(time.time() * 1000) - started_ms
             if result.meta is None:
                 result.meta = ToolMeta(tool_name=self.tool_name)
             result.meta.tool_name = self.tool_name
-            result.meta.duration_ms = duration_ms
+            result.meta.duration_ms = latency_ms
+            result.meta.latency_ms = latency_ms
             result.meta.trace_id = trace_id
             result.meta.parent_span_id = started_event.span_id
-            self.recorder.emit(
+            result.meta.model_name = result.meta.model_name or model_name
+            result.meta.prompt_name = result.meta.prompt_name or prompt_name
+            result.meta.prompt_version = result.meta.prompt_version or prompt_version
+            self.emitter.emit(
                 event_type="tool_finished",
                 trace_id=trace_id,
                 parent_span_id=started_event.span_id,
@@ -86,13 +115,18 @@ class BaseToolHandler(ABC):
                     "tool_name": self.tool_name,
                     "success": result.success,
                     "error_code": result.error.code if result.error else None,
+                    "model_name": result.meta.model_name,
+                    "prompt_name": result.meta.prompt_name,
+                    "prompt_version": result.meta.prompt_version,
+                    "token_usage": result.meta.token_usage,
+                    "latency_ms": result.meta.latency_ms,
                 },
             )
             return result
         except Exception as exc:  # pragma: no cover
             err = wrap_exception(self.tool_name, exc)
-            duration_ms = int(time.time() * 1000) - started_ms
-            self.recorder.emit(
+            latency_ms = int(time.time() * 1000) - started_ms
+            self.emitter.emit(
                 event_type="error_raised",
                 trace_id=trace_id,
                 parent_span_id=started_event.span_id,
@@ -104,9 +138,13 @@ class BaseToolHandler(ABC):
                 data=None,
                 meta=ToolMeta(
                     tool_name=self.tool_name,
-                    duration_ms=duration_ms,
+                    duration_ms=latency_ms,
+                    latency_ms=latency_ms,
                     trace_id=trace_id,
                     parent_span_id=started_event.span_id,
+                    model_name=model_name,
+                    prompt_name=prompt_name,
+                    prompt_version=prompt_version,
                 ),
             )
 

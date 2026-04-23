@@ -2,9 +2,19 @@ from __future__ import annotations
 
 from fastapi import Depends, FastAPI
 
+from app.api_schemas import (
+    CompareWorkflowRequest,
+    LibrarySaveWorkflowRequest,
+    LibrarySaveWorkflowResponse,
+    QaWorkflowRequest,
+    RelatedWorkWorkflowRequest,
+    WorkflowBaseResponse,
+)
 from app.dependencies import get_settings
 from graph.workflows.compare_export_workflow import build_compare_export_workflow
+from graph.workflows.library_workflow import build_library_workflow
 from graph.workflows.qa_workflow import build_qa_workflow
+from graph.workflows.related_work_workflow import build_related_work_workflow
 
 app = FastAPI(title="research_agent", version="0.1.0")
 
@@ -19,10 +29,88 @@ def observability_health():
     return {"status": "ok"}
 
 
+def _invoke_workflow(workflow, state: dict) -> dict:
+    result = workflow.invoke(state)
+    return {
+        "trace_id": result.get("trace_id"),
+        "final_answer": result.get("final_answer"),
+        "errors": result.get("errors", []),
+        "execution_steps": result.get("execution_steps", []),
+        **result,
+    }
+
+
+@app.post("/workflows/qa", response_model=WorkflowBaseResponse)
+def run_qa_workflow(payload: QaWorkflowRequest):
+    app_graph = build_qa_workflow()
+    result = _invoke_workflow(
+        app_graph,
+        {
+            "workflow": "qa",
+            "user_query": payload.user_query,
+            "context": payload.context.model_dump(),
+            "paper_ids": payload.paper_ids,
+            "enable_judge": payload.enable_judge,
+        },
+    )
+    return WorkflowBaseResponse.model_validate(result)
+
+
+@app.post("/workflows/compare", response_model=WorkflowBaseResponse)
+def run_compare_workflow(payload: CompareWorkflowRequest):
+    app_graph = build_compare_export_workflow()
+    result = _invoke_workflow(
+        app_graph,
+        {
+            "workflow": "compare",
+            "user_query": payload.user_query,
+            "context": payload.context.model_dump(),
+            "paper_ids": payload.paper_ids,
+            "enable_judge": payload.enable_judge,
+        },
+    )
+    return WorkflowBaseResponse.model_validate(result)
+
+
+@app.post("/workflows/related-work", response_model=WorkflowBaseResponse)
+def run_related_workflow(payload: RelatedWorkWorkflowRequest):
+    app_graph = build_related_work_workflow()
+    result = _invoke_workflow(
+        app_graph,
+        {
+            "workflow": "related_work",
+            "user_query": payload.user_query,
+            "topic": payload.topic,
+            "context": payload.context.model_dump(),
+            "paper_ids": payload.paper_ids,
+            "enable_judge": payload.enable_judge,
+            "max_revise": payload.max_revise,
+        },
+    )
+    return WorkflowBaseResponse.model_validate(result)
+
+
+@app.post("/workflows/library/save", response_model=LibrarySaveWorkflowResponse)
+def run_library_save_workflow(payload: LibrarySaveWorkflowRequest):
+    app_graph = build_library_workflow()
+    result = _invoke_workflow(
+        app_graph,
+        {
+            "workflow": "library_save",
+            "query": payload.query,
+            "context": payload.context.model_dump(),
+            "paper_id": payload.paper_id,
+            "top_k": payload.top_k,
+        },
+    )
+    return LibrarySaveWorkflowResponse.model_validate(result)
+
+
 def run_demo() -> None:
     qa = build_qa_workflow()
     state = qa.invoke(
         {
+            "workflow": "qa",
             "user_query": "What is the method in this paper?",
             "context": {"user_id": "demo", "request_id": "req-demo-qa"},
             "paper_ids": ["oa-1"],
@@ -34,6 +122,7 @@ def run_demo() -> None:
     compare = build_compare_export_workflow()
     state2 = compare.invoke(
         {
+            "workflow": "compare",
             "user_query": "Compare these papers",
             "context": {"user_id": "demo", "request_id": "req-demo-cmp"},
             "paper_ids": ["oa-1", "oa-2"],

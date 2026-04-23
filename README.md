@@ -165,3 +165,57 @@ Prompt selection is now registry-driven instead of filename max-version:
 - `deprecated` versions are never selected by default
 - Explicit version loading is supported (including deprecated)
 - Illegal registry config (missing active / duplicate entries / missing prompt file) raises config errors
+
+## Commit 3 Finalization
+
+### Service Startup
+
+```bash
+uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
+
+### Workflow APIs
+
+- `POST /workflows/qa`
+- `POST /workflows/compare`
+- `POST /workflows/related-work`
+- `POST /workflows/library/save`
+
+Example payload (`/workflows/library/save`):
+
+```json
+{
+  "query": "agent observability",
+  "context": {"user_id": "u1", "request_id": "req-123"},
+  "paper_id": null,
+  "top_k": 5
+}
+```
+
+### Observability Event Standard
+
+External event types are unified to:
+
+- `request_started`
+- `request_finished`
+- `step_started`
+- `step_finished`
+- `tool_called`
+- `tool_finished`
+- `judge_finished`
+- `error_raised`
+
+Legacy node/workflow event names are normalized via mapping layer before recording.
+
+### This Round Completed
+
+- Added library workflow chain: search -> candidate select -> save_to_library -> compose -> observability.
+- Added `/workflows/library/save` endpoint and completed workflow API set.
+- Unified observability event emission points in node runner, tool wrapper, and judge nodes.
+- Added integration and endpoint tests for library workflow and observability standard.
+
+### Not Yet Productionized
+
+- Java client transport still minimal and not integrated with advanced circuit-breaking / bulkhead controls.
+- Workflow auth/rate-limit/multi-tenant isolation is not implemented.
+- Observability sink is still in-memory and not persisted to external tracing backend.
