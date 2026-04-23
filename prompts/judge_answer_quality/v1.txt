@@ -1,0 +1,1 @@
+﻿Judge answer quality with rubric dimensions and output JSON.

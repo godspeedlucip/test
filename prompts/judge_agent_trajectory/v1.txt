@@ -1,0 +1,1 @@
+﻿Judge full agent trajectory on tool selection, grounding, and efficiency.
