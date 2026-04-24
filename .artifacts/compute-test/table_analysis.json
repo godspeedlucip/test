@@ -1,0 +1,31 @@
+{
+  "rows": 2,
+  "columns": 2,
+  "column_types": {
+    "a": "int64",
+    "b": "object"
+  },
+  "missing_values": {
+    "a": 0,
+    "b": 0
+  },
+  "numeric_describe": {
+    "a": {
+      "count": 2.0,
+      "mean": 1.5,
+      "std": 0.7071067811865476,
+      "min": 1.0,
+      "25%": 1.25,
+      "50%": 1.5,
+      "75%": 1.75,
+      "max": 2.0
+    }
+  },
+  "categorical_top_values": {
+    "b": {
+      "u": 1,
+      "v": 1
+    }
+  },
+  "artifacts": []
+}

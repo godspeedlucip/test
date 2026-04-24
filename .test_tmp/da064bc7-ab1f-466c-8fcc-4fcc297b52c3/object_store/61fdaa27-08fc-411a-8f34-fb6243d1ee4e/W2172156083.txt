@@ -1,0 +1,18 @@
+Title: Real-time human pose recognition in parts from single depth images
+
+Abstract
+This document summarizes Real-time human pose recognition in parts from single depth images.
+
+Introduction
+The study focuses on Real-time human pose recognition in parts from single depth images.
+
+Method
+The method details are captured from available metadata for Real-time human pose recognition in parts from single depth images.
+
+Results
+Primary findings are pending full PDF provider integration; this local document preserves pipeline fidelity.
+
+References
+Venue: unknown venue (2011)
+DOI: 10.1109/cvpr.2011.5995316
+PDF Source: None

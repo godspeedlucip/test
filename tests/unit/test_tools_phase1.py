@@ -6,6 +6,7 @@ from tools.document.ask_paper import AskPaperInput, ask_paper_tool
 from tools.document.fetch_pdf import FetchPdfInput, fetch_pdf_tool
 from tools.document.index_document import IndexDocumentInput, index_document_tool
 from tools.document.parse_pdf import ParsePdfInput, parse_pdf_tool
+from tools.document.retrieve_evidence import RetrieveEvidenceInput, retrieve_evidence_tool
 from tools.judge.judge_answer_quality import JudgeAnswerQualityInput, judge_answer_quality_tool
 
 
@@ -26,9 +27,19 @@ def test_phase1_tool_chain_runs():
     ir = index_document_tool.execute(IndexDocumentInput(context=ctx, document_id=document_id))
     assert ir.success and ir.data["index_status"] == "completed"
 
+    rr = retrieve_evidence_tool.execute(
+        RetrieveEvidenceInput(context=ctx, document_id=document_id, query="method and results", top_k=3)
+    )
+    assert rr.success
+    assert rr.data["evidences"]
+
     ar = ask_paper_tool.execute(AskPaperInput(context=ctx, document_id=document_id, question="what method?"))
     assert ar.success
     assert isinstance(ar.data["answer"], str)
+    assert ar.data["evidences"]
+    assert ar.meta.model_name
+    assert ar.meta.prompt_version
+    assert ar.meta.token_usage is not None
 
     jr = judge_answer_quality_tool.execute(
         JudgeAnswerQualityInput(

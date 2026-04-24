@@ -11,6 +11,7 @@ from integrations.java_client import (
     ListLibraryPapersRequest,
     MockJavaClient,
     SavePaperToLibraryRequest,
+    TagPaperRequest,
     TransportResponse,
 )
 
@@ -28,6 +29,18 @@ def test_mock_java_client_library_contract():
 
     listed = client.list_library_papers(ListLibraryPapersRequest(user_id="u1"))
     assert listed.paper_ids == ["p1"]
+
+    tagged = client.tag_paper(TagPaperRequest(user_id="u1", paper_id="p1", tags=["llm", "survey"]))
+    assert tagged.tagged is True
+    assert "llm" in tagged.tags
+
+
+def test_mock_java_client_idempotency_for_side_effects():
+    client = MockJavaClient()
+    idem = "idem-side-effect-1"
+    first = client.add_paper_note(AddPaperNoteRequest(user_id="u1", paper_id="p1", note="n1", idempotency_key=idem))
+    second = client.add_paper_note(AddPaperNoteRequest(user_id="u1", paper_id="p1", note="n1", idempotency_key=idem))
+    assert first.notes_count == second.notes_count == 1
 
 
 def test_java_client_retries_only_retryable_errors():

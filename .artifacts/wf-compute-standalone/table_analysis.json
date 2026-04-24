@@ -1,0 +1,36 @@
+{
+  "rows": 3,
+  "columns": 2,
+  "column_types": {
+    "x": "int64",
+    "y": "int64"
+  },
+  "missing_values": {
+    "x": 0,
+    "y": 0
+  },
+  "numeric_describe": {
+    "x": {
+      "count": 3.0,
+      "mean": 2.0,
+      "std": 1.0,
+      "min": 1.0,
+      "25%": 1.5,
+      "50%": 2.0,
+      "75%": 2.5,
+      "max": 3.0
+    },
+    "y": {
+      "count": 3.0,
+      "mean": 3.3333333333333335,
+      "std": 1.5275252316519465,
+      "min": 2.0,
+      "25%": 2.5,
+      "50%": 3.0,
+      "75%": 4.0,
+      "max": 5.0
+    }
+  },
+  "categorical_top_values": {},
+  "artifacts": []
+}

@@ -1,8 +1,8 @@
-﻿from pydantic import BaseModel
+from pydantic import BaseModel
 
 from domain.context import RequestContext
 from domain.runtime import RuntimeConfig
-from integrations import get_repo
+from integrations import get_artifact_store, get_repo
 from tools.base import BaseToolHandler, success_result
 
 
@@ -32,11 +32,13 @@ class ExportBibtexHandler(BaseToolHandler):
             p = repo.papers.get(pid)
             title = p.title if p else pid
             year = p.year if p and p.year else 2024
-            entries.append(f"@article{{{pid},\\n  title={{ {title} }},\\n  year={{ {year} }}\\n}}")
+            entries.append(f"@article{{{pid},\n  title={{ {title} }},\n  year={{ {year} }}\n}}")
         bib = "\n\n".join(entries)
+        run_id = payload.context.request_id or "bibtex-export"
+        artifact = get_artifact_store().write_text(run_id=run_id, file_name="references.bib", content=bib)
         return success_result(
             tool_name=self.tool_name,
-            data=ExportBibtexOutputData(entries_count=len(entries), bibtex_text=bib, export_file_uri="memory://exports/references.bib"),
+            data=ExportBibtexOutputData(entries_count=len(entries), bibtex_text=bib, export_file_uri=artifact["uri"]),
         )
 
 

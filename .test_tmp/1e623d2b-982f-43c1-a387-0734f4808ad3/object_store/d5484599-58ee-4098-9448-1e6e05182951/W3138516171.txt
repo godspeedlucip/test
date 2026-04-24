@@ -1,0 +1,18 @@
+Title: Swin Transformer: Hierarchical Vision Transformer using Shifted Windows
+
+Abstract
+This document summarizes Swin Transformer: Hierarchical Vision Transformer using Shifted Windows.
+
+Introduction
+The study focuses on Swin Transformer: Hierarchical Vision Transformer using Shifted Windows.
+
+Method
+The method details are captured from available metadata for Swin Transformer: Hierarchical Vision Transformer using Shifted Windows.
+
+Results
+Primary findings are pending full PDF provider integration; this local document preserves pipeline fidelity.
+
+References
+Venue: 2021 IEEE/CVF International Conference on Computer Vision (ICCV) (2021)
+DOI: 10.1109/iccv48922.2021.00986
+PDF Source: None

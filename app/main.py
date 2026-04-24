@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 from fastapi import Depends, FastAPI
+from fastapi import HTTPException
 
 from app.api_schemas import (
     CompareWorkflowRequest,
+    LibraryManageWorkflowRequest,
+    LibraryManageWorkflowResponse,
     LibrarySaveWorkflowRequest,
     LibrarySaveWorkflowResponse,
     QaWorkflowRequest,
@@ -13,6 +16,7 @@ from app.api_schemas import (
 from app.dependencies import get_settings
 from graph.workflows.compare_export_workflow import build_compare_export_workflow
 from graph.workflows.library_workflow import build_library_workflow
+from graph.workflows.library_manage_workflow import build_library_manage_workflow
 from graph.workflows.qa_workflow import build_qa_workflow
 from graph.workflows.related_work_workflow import build_related_work_workflow
 
@@ -104,6 +108,31 @@ def run_library_save_workflow(payload: LibrarySaveWorkflowRequest):
         },
     )
     return LibrarySaveWorkflowResponse.model_validate(result)
+
+
+@app.post("/workflows/library/manage", response_model=LibraryManageWorkflowResponse)
+def run_library_manage_workflow(payload: LibraryManageWorkflowRequest):
+    if payload.action in {"save", "add_note", "tag"} and not payload.idempotency_key:
+        raise HTTPException(status_code=400, detail="idempotency_key is required for save/add_note/tag actions")
+    app_graph = build_library_manage_workflow()
+    context = payload.context.model_dump()
+    if payload.idempotency_key:
+        context["request_id"] = payload.idempotency_key
+    result = _invoke_workflow(
+        app_graph,
+        {
+            "workflow": "library_manage",
+            "action": payload.action,
+            "query": payload.query,
+            "context": context,
+            "paper_id": payload.paper_id,
+            "top_k": payload.top_k,
+            "library_note": payload.library_note,
+            "paper_tags": payload.paper_tags,
+            "idempotency_key": payload.idempotency_key,
+        },
+    )
+    return LibraryManageWorkflowResponse.model_validate(result)
 
 
 def run_demo() -> None:

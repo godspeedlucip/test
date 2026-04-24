@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Literal
 
 from pydantic import BaseModel
+from pydantic import Field
 
 from domain.context import RequestContext
 from integrations import get_artifact_store
@@ -22,6 +23,7 @@ class GeneratePlotInput(BaseModel):
 
 class GeneratePlotOutputData(BaseModel):
     image_artifact: dict[str, str]
+    artifacts: list[dict[str, str]] = Field(default_factory=list)
 
 
 def _load_table(path: Path):
@@ -103,7 +105,8 @@ class GeneratePlotHandler(BaseToolHandler):
             return success_result(
                 tool_name=self.tool_name,
                 data=GeneratePlotOutputData(
-                    image_artifact={"uri": output_path.resolve().as_uri(), "path": str(output_path.resolve())}
+                    image_artifact={"uri": output_path.resolve().as_uri(), "path": str(output_path.resolve())},
+                    artifacts=[{"uri": output_path.resolve().as_uri(), "path": str(output_path.resolve())}],
                 ),
             )
         except KeyError as exc:

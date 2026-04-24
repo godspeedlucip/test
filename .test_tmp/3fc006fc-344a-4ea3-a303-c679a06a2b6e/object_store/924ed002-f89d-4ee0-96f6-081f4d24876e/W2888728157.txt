@@ -1,0 +1,18 @@
+Title: Classification assessment methods
+
+Abstract
+This document summarizes Classification assessment methods.
+
+Introduction
+The study focuses on Classification assessment methods.
+
+Method
+The method details are captured from available metadata for Classification assessment methods.
+
+Results
+Primary findings are pending full PDF provider integration; this local document preserves pipeline fidelity.
+
+References
+Venue: Applied Computing and Informatics (2018)
+DOI: 10.1016/j.aci.2018.08.003
+PDF Source: https://www.emerald.com/insight/content/doi/10.1016/j.aci.2018.08.003/full/pdf?title=classification-assessment-methods

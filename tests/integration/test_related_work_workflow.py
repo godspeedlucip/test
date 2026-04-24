@@ -2,17 +2,10 @@ from domain.base import ToolMeta, ToolResult
 from domain.context import RequestContext
 from graph.workflows.related_work_workflow import build_related_work_workflow
 from observability.recorder import get_recorder
-from tools.academic.search_papers import SearchPapersInput, search_papers_tool
-
-
-def _prepare_paper_ids(ctx: RequestContext, top_k: int = 2) -> list[str]:
-    sr = search_papers_tool.execute(SearchPapersInput(context=ctx, query="llm related work", top_k=top_k))
-    return [x["paper_id"] for x in sr.data["papers"][:top_k]]
 
 
 def test_related_work_workflow_success_path():
     ctx = RequestContext(user_id="u1", request_id="wf-related-success")
-    pids = _prepare_paper_ids(ctx, top_k=2)
 
     app = build_related_work_workflow()
     out = app.invoke(
@@ -21,7 +14,7 @@ def test_related_work_workflow_success_path():
             "user_query": "Generate related work for transformer methods",
             "topic": "transformer methods",
             "context": ctx.model_dump(),
-            "paper_ids": pids,
+            "top_k": 2,
             "enable_judge": True,
             "max_revise": 1,
         }
@@ -30,6 +23,7 @@ def test_related_work_workflow_success_path():
     assert out.get("related_work")
     assert out.get("final_answer")
     assert out.get("trajectory_judge_result")
+    assert any((x or {}).get("judge_stage") == "trajectory" for x in out.get("judge_results", []))
     assert not out.get("human_review")
     assert any(s.get("node_name") == "related_work_node" and s.get("status") == "succeeded" for s in out.get("execution_steps", []))
     assert any(e.event_type == "request_finished" for e in get_recorder().events)
@@ -39,7 +33,6 @@ def test_related_work_judge_reject_then_revise_success(monkeypatch):
     import graph.nodes.judge_node as judge_node_module
 
     ctx = RequestContext(user_id="u1", request_id="wf-related-revise")
-    pids = _prepare_paper_ids(ctx, top_k=2)
     calls = {"n": 0}
 
     def fake_execute(_payload):
@@ -67,7 +60,7 @@ def test_related_work_judge_reject_then_revise_success(monkeypatch):
             "user_query": "Generate related work",
             "topic": "retrieval augmentation",
             "context": ctx.model_dump(),
-            "paper_ids": pids,
+            "top_k": 2,
             "enable_judge": True,
             "max_revise": 2,
         }
@@ -76,6 +69,7 @@ def test_related_work_judge_reject_then_revise_success(monkeypatch):
     assert out.get("final_answer")
     assert out.get("revise_count") == 1
     assert not out.get("human_review")
+    assert any((x or {}).get("judge_stage") == "trajectory" for x in out.get("judge_results", []))
     assert any(a.get("type") == "revision" for a in out.get("artifacts", []))
 
 
@@ -83,7 +77,6 @@ def test_related_work_judge_reject_to_human_review(monkeypatch):
     import graph.nodes.judge_node as judge_node_module
 
     ctx = RequestContext(user_id="u1", request_id="wf-related-human-review")
-    pids = _prepare_paper_ids(ctx, top_k=2)
 
     def always_reject(_payload):
         return ToolResult(
@@ -108,7 +101,7 @@ def test_related_work_judge_reject_to_human_review(monkeypatch):
             "user_query": "Generate related work",
             "topic": "efficient transformers",
             "context": ctx.model_dump(),
-            "paper_ids": pids,
+            "top_k": 2,
             "enable_judge": True,
             "max_revise": 1,
         }
@@ -124,7 +117,6 @@ def test_related_work_node_failure_then_retry_success(monkeypatch):
     import graph.nodes.related_work_node as related_node_module
 
     ctx = RequestContext(user_id="u1", request_id="wf-related-retry")
-    pids = _prepare_paper_ids(ctx, top_k=2)
     original_execute = related_node_module.generate_related_work_tool.execute
     calls = {"n": 0}
 
@@ -143,7 +135,7 @@ def test_related_work_node_failure_then_retry_success(monkeypatch):
             "user_query": "Generate related work with retries",
             "topic": "graph transformers",
             "context": ctx.model_dump(),
-            "paper_ids": pids,
+            "top_k": 2,
             "enable_judge": False,
             "max_retries": 2,
         }

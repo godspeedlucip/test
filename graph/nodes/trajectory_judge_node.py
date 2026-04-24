@@ -1,3 +1,5 @@
+import os
+
 from domain.context import RequestContext
 from domain.judge import JudgeRubric
 from domain.runtime import ModelConfig, PromptConfig
@@ -5,6 +7,13 @@ from observability.emitter import get_emitter
 from tools.judge.judge_agent_trajectory import JudgeAgentTrajectoryInput, judge_agent_trajectory_tool
 
 from graph.nodes.common import run_node
+
+
+def _default_model_config() -> dict:
+    provider_mode = os.getenv("LLM_PROVIDER_MODE", "mock").lower()
+    if provider_mode == "real":
+        return {"provider": "openai", "model_name": os.getenv("LLM_MODEL_NAME", "gpt-4o-mini")}
+    return {"provider": "mock", "model_name": "mock-judge"}
 
 
 def trajectory_judge_node(state: dict):
@@ -27,7 +36,7 @@ def trajectory_judge_node(state: dict):
         result = judge_agent_trajectory_tool.execute(
             JudgeAgentTrajectoryInput(
                 context=ctx,
-                model=ModelConfig.model_validate(s.get("model") or {"provider": "mock", "model_name": "mock-judge"}),
+                model=ModelConfig.model_validate(s.get("model") or _default_model_config()),
                 prompt=PromptConfig.model_validate(
                     s.get("prompt") or {"prompt_name": "judge_agent_trajectory", "prompt_version": "v1"}
                 ),
@@ -43,6 +52,7 @@ def trajectory_judge_node(state: dict):
             raise RuntimeError(f"judge_agent_trajectory failed: {result.error.message}")
 
         judge_result = result.data
+        judge_result["judge_stage"] = "trajectory"
         get_emitter().emit(
             event_type="judge_finished",
             trace_id=s.get("trace_id") or ctx.request_id or "unknown",

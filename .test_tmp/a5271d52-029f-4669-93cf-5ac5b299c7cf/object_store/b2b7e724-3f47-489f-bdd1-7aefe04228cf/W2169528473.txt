@@ -1,0 +1,18 @@
+Title: A note on two problems in connexion with graphs
+
+Abstract
+This document summarizes A note on two problems in connexion with graphs.
+
+Introduction
+The study focuses on A note on two problems in connexion with graphs.
+
+Method
+The method details are captured from available metadata for A note on two problems in connexion with graphs.
+
+Results
+Primary findings are pending full PDF provider integration; this local document preserves pipeline fidelity.
+
+References
+Venue: Numerische Mathematik (1959)
+DOI: 10.1007/bf01386390
+PDF Source: None

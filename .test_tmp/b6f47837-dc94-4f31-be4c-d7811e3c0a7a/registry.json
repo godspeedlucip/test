@@ -1,0 +1,11 @@
+{
+  "prompts": [
+    {
+      "prompt_name": "related_work",
+      "version": "v1",
+      "status": "draft",
+      "owner": "x",
+      "change_log": "only draft"
+    }
+  ]
+}

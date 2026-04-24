@@ -1,0 +1,11 @@
+{
+  "prompts": [
+    {
+      "prompt_name": "compare_papers",
+      "version": "v1",
+      "status": "active",
+      "owner": "x",
+      "change_log": "init"
+    }
+  ]
+}

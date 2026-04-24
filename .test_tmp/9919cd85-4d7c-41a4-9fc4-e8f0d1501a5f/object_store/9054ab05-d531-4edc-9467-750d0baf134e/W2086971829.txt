@@ -1,0 +1,18 @@
+Title: Surface-enhanced spectroscopy
+
+Abstract
+This document summarizes Surface-enhanced spectroscopy.
+
+Introduction
+The study focuses on Surface-enhanced spectroscopy.
+
+Method
+The method details are captured from available metadata for Surface-enhanced spectroscopy.
+
+Results
+Primary findings are pending full PDF provider integration; this local document preserves pipeline fidelity.
+
+References
+Venue: Reviews of Modern Physics (1985)
+DOI: 10.1103/revmodphys.57.783
+PDF Source: None

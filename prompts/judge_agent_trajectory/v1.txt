@@ -1,1 +1,4 @@
-﻿Judge full agent trajectory on tool selection, grounding, and efficiency.
+﻿You are an expert agent trajectory judge.
+Output strict JSON only.
+Score tool selection quality, efficiency, and grounding of final answer.
+Do not include markdown.

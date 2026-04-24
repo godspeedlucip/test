@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import time
 from dataclasses import dataclass
@@ -16,6 +16,29 @@ class LLMRuntimeResult:
     loaded_prompt: LoadedPrompt
     rendered_prompt: str
     latency_ms: int
+    estimated_cost_usd: float
+
+
+def _normalize_token_usage(raw: dict[str, int] | None) -> dict[str, int]:
+    usage = dict(raw or {})
+    usage.setdefault("prompt_tokens", 0)
+    usage.setdefault("completion_tokens", 0)
+    usage.setdefault("total_tokens", usage["prompt_tokens"] + usage["completion_tokens"])
+    return usage
+
+
+_MODEL_COST_PER_1K_TOKENS_USD: dict[str, float] = {
+    "mock-llm-v1": 0.0002,
+    "mock-llm-fallback-v1": 0.00025,
+    "mock-judge-v1": 0.00015,
+    "mock-judge-v2": 0.00018,
+}
+
+
+def _estimate_cost_usd(model_name: str, usage: dict[str, int]) -> float:
+    rate = _MODEL_COST_PER_1K_TOKENS_USD.get(model_name, 0.0002)
+    total_tokens = int(usage.get("total_tokens", 0) or 0)
+    return round((total_tokens / 1000.0) * rate, 8)
 
 
 def run_llm_task(
@@ -25,6 +48,7 @@ def run_llm_task(
     prompt_version: str | None,
     body: str,
     requested_model: ModelConfig | dict | None = None,
+    response_format: str = "text",
 ) -> LLMRuntimeResult:
     model_cfg = ModelConfig.model_validate(requested_model) if requested_model is not None else None
     loaded_prompt = get_prompt_registry().load(prompt_name, prompt_version)
@@ -35,7 +59,11 @@ def run_llm_task(
         prompt=rendered_prompt,
         primary_model=route.primary.model_name,
         fallback_models=[m.model_name for m in route.fallbacks] if route.fallback_enabled else [],
+        response_format=response_format,
     )
+    response.token_usage = _normalize_token_usage(response.token_usage)
+    estimated_cost = _estimate_cost_usd(response.model_name, response.token_usage)
+    response.token_usage["estimated_cost_microusd"] = int(estimated_cost * 1_000_000)
     latency_ms = int(time.time() * 1000) - started
     return LLMRuntimeResult(
         response=response,
@@ -43,6 +71,7 @@ def run_llm_task(
         loaded_prompt=loaded_prompt,
         rendered_prompt=rendered_prompt,
         latency_ms=latency_ms,
+        estimated_cost_usd=estimated_cost,
     )
 
 

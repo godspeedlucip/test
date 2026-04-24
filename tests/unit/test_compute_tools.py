@@ -70,6 +70,7 @@ def test_execute_notebook_template_from_json():
     assert result.success
     artifact_path = Path(result.data["notebook_artifact"]["path"])
     assert artifact_path.exists()
+    assert result.data["artifacts"]
     loaded = json.loads(artifact_path.read_text(encoding="utf-8"))
     assert loaded["cells"][0]["execution_count"] == 1
 
@@ -84,6 +85,7 @@ def test_analyze_table_csv():
     assert result.data["missing_values"]["b"] == 1
     assert "a" in result.data["numeric_describe"]
     assert "c" in result.data["categorical_top_values"]
+    assert result.data["artifacts"]
 
 
 def test_analyze_table_tsv():
@@ -112,6 +114,7 @@ def test_generate_plot_success():
     assert result.success
     image_path = Path(result.data["image_artifact"]["path"])
     assert image_path.exists()
+    assert result.data["artifacts"]
 
 
 def test_generate_plot_invalid_column():

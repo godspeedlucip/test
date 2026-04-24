@@ -1,5 +1,10 @@
 pydantic<3,>=2.8
 langgraph>=0.2.20
+fastapi<1,>=0.111
+uvicorn<1,>=0.30
+pandas<3,>=2.2
+matplotlib<4,>=3.8
+openpyxl<4,>=3.1
 
 [dev]
 pytest>=8.2

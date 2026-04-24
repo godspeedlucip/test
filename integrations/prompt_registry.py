@@ -61,6 +61,12 @@ class FilePromptRegistry:
         versions = self._index.get(prompt_name, {})
         return sorted(versions.keys())
 
+    def list_prompts(self) -> list[str]:
+        return sorted(self._index.keys())
+
+    def list_active_prompts(self) -> dict[str, str]:
+        return {name: self._resolve_default_version(name) for name in self.list_prompts()}
+
     def _resolve_default_version(self, prompt_name: str) -> str:
         by_name = self._index.get(prompt_name)
         if not by_name:

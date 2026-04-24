@@ -44,6 +44,18 @@ class AddPaperNoteResponse(BaseModel):
     notes_count: int
 
 
+class TagPaperRequest(BaseModel):
+    user_id: str
+    paper_id: str
+    tags: list[str] = Field(default_factory=list)
+    idempotency_key: str | None = None
+
+
+class TagPaperResponse(BaseModel):
+    tagged: bool
+    tags: list[str] = Field(default_factory=list)
+
+
 class RecordFileArtifactRequest(BaseModel):
     task_id: str
     artifact_uri: str
@@ -226,6 +238,14 @@ class JavaClient:
         )
         return AddPaperNoteResponse.model_validate(body)
 
+    def tag_paper(self, req: TagPaperRequest) -> TagPaperResponse:
+        body = self._post(
+            path="/library/tag-paper",
+            payload=req.model_dump(exclude_none=True),
+            idempotency_key=req.idempotency_key,
+        )
+        return TagPaperResponse.model_validate(body)
+
     def record_file_artifact(self, req: RecordFileArtifactRequest) -> RecordFileArtifactResponse:
         body = self._post(
             path="/artifacts/record",
@@ -256,22 +276,57 @@ class MockJavaClient:
         self.task_status: dict[str, str] = {}
         self.artifacts: dict[str, dict[str, Any]] = {}
         self.observability_events: list[dict[str, Any]] = []
+        self.paper_tags: dict[str, dict[str, list[str]]] = {}
+        self._idempotency_cache: dict[str, dict[str, Any]] = {}
+
+    def _cached(self, scope: str, key: str | None):
+        if not key:
+            return None
+        return self._idempotency_cache.get(f"{scope}:{key}")
+
+    def _remember(self, scope: str, key: str | None, value: BaseModel) -> None:
+        if key:
+            self._idempotency_cache[f"{scope}:{key}"] = value.model_dump()
 
     def save_paper_to_library(self, req: SavePaperToLibraryRequest) -> SavePaperToLibraryResponse:
+        cached = self._cached("save_paper", req.idempotency_key)
+        if cached is not None:
+            return SavePaperToLibraryResponse.model_validate(cached)
         repo = get_repo()
         repo.library.setdefault(req.user_id, [])
         if req.paper_id not in repo.library[req.user_id]:
             repo.library[req.user_id].append(req.paper_id)
-        return SavePaperToLibraryResponse(saved=True, paper_ids=list(repo.library[req.user_id]))
+        response = SavePaperToLibraryResponse(saved=True, paper_ids=list(repo.library[req.user_id]))
+        self._remember("save_paper", req.idempotency_key, response)
+        return response
 
     def list_library_papers(self, req: ListLibraryPapersRequest) -> ListLibraryPapersResponse:
         repo = get_repo()
         return ListLibraryPapersResponse(paper_ids=list(repo.library.get(req.user_id, [])))
 
     def add_paper_note(self, req: AddPaperNoteRequest) -> AddPaperNoteResponse:
+        cached = self._cached("add_note", req.idempotency_key)
+        if cached is not None:
+            return AddPaperNoteResponse.model_validate(cached)
         repo = get_repo()
         repo.notes.setdefault(req.paper_id, []).append(req.note)
-        return AddPaperNoteResponse(added=True, notes_count=len(repo.notes[req.paper_id]))
+        response = AddPaperNoteResponse(added=True, notes_count=len(repo.notes[req.paper_id]))
+        self._remember("add_note", req.idempotency_key, response)
+        return response
+
+    def tag_paper(self, req: TagPaperRequest) -> TagPaperResponse:
+        cached = self._cached("tag_paper", req.idempotency_key)
+        if cached is not None:
+            return TagPaperResponse.model_validate(cached)
+        normalized = [t.strip() for t in req.tags if t and t.strip()]
+        bucket = self.paper_tags.setdefault(req.user_id, {})
+        current = set(bucket.get(req.paper_id, []))
+        current.update(normalized)
+        tagged = bool(normalized)
+        bucket[req.paper_id] = sorted(current)
+        response = TagPaperResponse(tagged=tagged, tags=bucket[req.paper_id])
+        self._remember("tag_paper", req.idempotency_key, response)
+        return response
 
     def record_file_artifact(self, req: RecordFileArtifactRequest) -> RecordFileArtifactResponse:
         artifact_id = f"artifact-{len(self.artifacts) + 1}"
@@ -283,18 +338,47 @@ class MockJavaClient:
         return UpdateTaskStatusResponse(updated=True, task_id=req.task_id, status=req.status)
 
     def report_observability_event(self, req: ReportObservabilityEventRequest) -> ReportObservabilityEventResponse:
+        cached = self._cached("report_event", req.idempotency_key)
+        if cached is not None:
+            return ReportObservabilityEventResponse.model_validate(cached)
         event_id = f"evt-{len(self.observability_events) + 1}"
         self.observability_events.append({"event_id": event_id, **req.model_dump()})
-        return ReportObservabilityEventResponse(accepted=True, event_id=event_id)
+        response = ReportObservabilityEventResponse(accepted=True, event_id=event_id)
+        self._remember("report_event", req.idempotency_key, response)
+        return response
 
 
 java_client: JavaClient | MockJavaClient | None = None
 
 
+def _runtime_env() -> str:
+    return os.getenv("RUNTIME_ENV", os.getenv("APP_ENV", "dev")).lower()
+
+
 def build_java_client() -> JavaClient | MockJavaClient:
+    env = _runtime_env()
+    raw_mode = os.getenv("JAVA_CLIENT_MODE")
+    mode = (raw_mode or "").lower()
+    if env == "prod" and not mode:
+        mode = "real"
+    elif not mode:
+        raise JavaClientNonRetryableError(
+            "JAVA_CLIENT_MODE must be explicitly set to 'real' or 'mock' outside prod",
+            error_layer="network",
+        )
+    if env == "prod" and mode != "real":
+        raise JavaClientNonRetryableError("JAVA_CLIENT_MODE must be 'real' when RUNTIME_ENV=prod", error_layer="network")
+    if mode not in {"real", "mock"}:
+        raise JavaClientNonRetryableError(
+            "JAVA_CLIENT_MODE must be 'real' or 'mock'; fallback/hybrid are forbidden",
+            error_layer="network",
+        )
+
     base_url = os.getenv("JAVA_CLIENT_BASE_URL")
-    if not base_url:
+    if mode == "mock":
         return MockJavaClient()
+    if mode == "real" and not base_url:
+        raise JavaClientNonRetryableError("JAVA_CLIENT_BASE_URL is required when JAVA_CLIENT_MODE=real")
     config = JavaClientConfig(
         base_url=base_url,
         timeout_seconds=float(os.getenv("JAVA_CLIENT_TIMEOUT_SECONDS", "5")),

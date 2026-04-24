@@ -1,0 +1,22 @@
+{
+  "by_trace": {
+    "trace-cp-1": [
+      {
+        "checkpoint_id": "5d5bbeee-1bf1-4dea-9899-bcfad390c81e",
+        "trace_id": "trace-cp-1",
+        "node_name": "n1",
+        "serialized_state_uri": "file:///D:/desktop/intern/python/science/research_agent/.test_tmp/d05004ed-020f-4ad1-a416-3637a9bb0722/checkpoints/trace-cp-1/5d5bbeee-1bf1-4dea-9899-bcfad390c81e.json",
+        "created_at_ms": 1777000846941
+      }
+    ]
+  },
+  "by_id": {
+    "5d5bbeee-1bf1-4dea-9899-bcfad390c81e": {
+      "checkpoint_id": "5d5bbeee-1bf1-4dea-9899-bcfad390c81e",
+      "trace_id": "trace-cp-1",
+      "node_name": "n1",
+      "serialized_state_uri": "file:///D:/desktop/intern/python/science/research_agent/.test_tmp/d05004ed-020f-4ad1-a416-3637a9bb0722/checkpoints/trace-cp-1/5d5bbeee-1bf1-4dea-9899-bcfad390c81e.json",
+      "created_at_ms": 1777000846941
+    }
+  }
+}

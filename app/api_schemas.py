@@ -48,3 +48,24 @@ class LibrarySaveWorkflowResponse(WorkflowBaseResponse):
     selected_paper_id: str | None = None
     saved_paper_id: str | None = None
     save_result: dict[str, Any] | None = None
+
+
+class LibraryManageWorkflowRequest(BaseModel):
+    action: str = "save"
+    context: RequestContext
+    query: str | None = None
+    paper_id: str | None = None
+    top_k: int = 5
+    library_note: str | None = None
+    paper_tags: list[str] = Field(default_factory=list)
+    idempotency_key: str | None = None
+
+
+class LibraryManageWorkflowResponse(WorkflowBaseResponse):
+    action: str
+    selected_paper_id: str | None = None
+    saved_paper_id: str | None = None
+    save_result: dict[str, Any] | None = None
+    note_result: dict[str, Any] | None = None
+    tag_result: dict[str, Any] | None = None
+    library_paper_ids: list[str] = Field(default_factory=list)

@@ -1,0 +1,18 @@
+Title: EuroQol: the current state of play
+
+Abstract
+This document summarizes EuroQol: the current state of play.
+
+Introduction
+The study focuses on EuroQol: the current state of play.
+
+Method
+The method details are captured from available metadata for EuroQol: the current state of play.
+
+Results
+Primary findings are pending full PDF provider integration; this local document preserves pipeline fidelity.
+
+References
+Venue: Health Policy (1996)
+DOI: 10.1016/0168-8510(96)00822-6
+PDF Source: None

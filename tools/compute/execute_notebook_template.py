@@ -32,6 +32,7 @@ class ExecuteNotebookTemplateOutputData(BaseModel):
     executed: bool
     notebook_artifact: dict[str, str]
     executed_cells: int
+    artifacts: list[dict[str, str]] = Field(default_factory=list)
 
 
 class ExecuteNotebookTemplateHandler(BaseToolHandler):
@@ -119,6 +120,7 @@ class ExecuteNotebookTemplateHandler(BaseToolHandler):
                     executed=True,
                     notebook_artifact=artifact,
                     executed_cells=execution_count,
+                    artifacts=[artifact],
                 ),
             )
         except TimeoutError as exc:

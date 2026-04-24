@@ -1,0 +1,28 @@
+[
+  {
+    "sample_id": "wf-qa-001",
+    "workflow": "qa_workflow",
+    "input": {
+      "user_query": "what is the contribution?",
+      "search_query": "language model",
+      "top_k": 1,
+      "enable_judge": true
+    },
+    "expect": {
+      "key": "final_answer"
+    }
+  },
+  {
+    "sample_id": "wf-compare-001",
+    "workflow": "compare_export_workflow",
+    "input": {
+      "user_query": "compare these papers",
+      "search_query": "transformer",
+      "top_k": 2,
+      "enable_judge": true
+    },
+    "expect": {
+      "key": "final_answer"
+    }
+  }
+]

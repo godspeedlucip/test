@@ -1,0 +1,18 @@
+Title: Two-dimensional pca: a new approach to appearance-based face representation and recognition
+
+Abstract
+This document summarizes Two-dimensional pca: a new approach to appearance-based face representation and recognition.
+
+Introduction
+The study focuses on Two-dimensional pca: a new approach to appearance-based face representation and recognition.
+
+Method
+The method details are captured from available metadata for Two-dimensional pca: a new approach to appearance-based face representation and recognition.
+
+Results
+Primary findings are pending full PDF provider integration; this local document preserves pipeline fidelity.
+
+References
+Venue: IEEE Transactions on Pattern Analysis and Machine Intelligence (2004)
+DOI: 10.1109/tpami.2004.1261097
+PDF Source: None

@@ -1,0 +1,18 @@
+Title: A review of vessel extraction techniques and algorithms
+
+Abstract
+This document summarizes A review of vessel extraction techniques and algorithms.
+
+Introduction
+The study focuses on A review of vessel extraction techniques and algorithms.
+
+Method
+The method details are captured from available metadata for A review of vessel extraction techniques and algorithms.
+
+Results
+Primary findings are pending full PDF provider integration; this local document preserves pipeline fidelity.
+
+References
+Venue: ACM Computing Surveys (2004)
+DOI: 10.1145/1031120.1031121
+PDF Source: None

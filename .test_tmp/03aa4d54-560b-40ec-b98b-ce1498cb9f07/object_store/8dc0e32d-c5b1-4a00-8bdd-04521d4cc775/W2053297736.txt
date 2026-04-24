@@ -1,0 +1,18 @@
+Title: Detecting potential technological fronts by comparing scientific papers and patents
+
+Abstract
+This document summarizes Detecting potential technological fronts by comparing scientific papers and patents.
+
+Introduction
+The study focuses on Detecting potential technological fronts by comparing scientific papers and patents.
+
+Method
+The method details are captured from available metadata for Detecting potential technological fronts by comparing scientific papers and patents.
+
+Results
+Primary findings are pending full PDF provider integration; this local document preserves pipeline fidelity.
+
+References
+Venue: foresight (2011)
+DOI: 10.1108/14636681111170211
+PDF Source: None

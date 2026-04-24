@@ -1,4 +1,4 @@
-﻿from domain.agent_state import AgentState, ExecutionStep
+from domain.agent_state import AgentState
 from domain.base import ToolError, ToolMeta, ToolResult
 from domain.citation import CitationItem
 from domain.context import RequestContext
@@ -19,7 +19,6 @@ __all__ = [
     "DocumentRecord",
     "EvalSample",
     "EvidenceSpan",
-    "ExecutionStep",
     "ExecutionTrace",
     "GroundedClaim",
     "HumanReviewTask",
@@ -40,3 +39,4 @@ __all__ = [
     "ToolMeta",
     "ToolResult",
 ]
+

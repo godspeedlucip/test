@@ -65,3 +65,30 @@ def test_post_workflows_compare_related_and_library():
     )
     assert lib_resp.status_code == 200
     assert lib_resp.json().get("save_result", {}).get("saved") is True
+
+    manage_save = client.post(
+        "/workflows/library/manage",
+        json={
+            "action": "save",
+            "query": "retrieval augmented generation",
+            "context": {"user_id": "api-u4", "request_id": "api-lib-manage-1"},
+            "idempotency_key": "api-lib-manage-save-1",
+            "top_k": 3,
+        },
+    )
+    assert manage_save.status_code == 200
+    saved_id = manage_save.json().get("saved_paper_id")
+    assert saved_id
+
+    manage_note = client.post(
+        "/workflows/library/manage",
+        json={
+            "action": "add_note",
+            "paper_id": saved_id,
+            "library_note": "important baseline",
+            "context": {"user_id": "api-u4", "request_id": "api-lib-manage-note-1"},
+            "idempotency_key": "api-lib-manage-note-1",
+        },
+    )
+    assert manage_note.status_code == 200
+    assert manage_note.json().get("note_result", {}).get("added") is True

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import uuid
 from pathlib import Path
 from typing import Any
 
@@ -78,6 +80,13 @@ class AnalyzeTableHandler(BaseToolHandler):
                 numeric_describe=numeric_describe,
                 categorical_top_values=categorical_top_values,
             )
+            run_id = payload.context.request_id or str(uuid.uuid4())
+            report_artifact = store.write_text(
+                run_id=run_id,
+                file_name="table_analysis.json",
+                content=json.dumps(output.model_dump(), ensure_ascii=False, indent=2),
+            )
+            output.artifacts = [report_artifact]
             return success_result(tool_name=self.tool_name, data=output)
         except ValueError as exc:
             return failed_result(

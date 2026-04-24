@@ -1,0 +1,18 @@
+Title: Generate related work with retries Study 2
+
+Abstract
+Abstract for Generate related work with retries 2
+
+Introduction
+The study focuses on Generate related work with retries Study 2.
+
+Method
+The method details are captured from available metadata for Generate related work with retries Study 2.
+
+Results
+Primary findings are pending full PDF provider integration; this local document preserves pipeline fidelity.
+
+References
+Venue: MockConf (2024)
+DOI: None
+PDF Source: https://example.org/2.pdf

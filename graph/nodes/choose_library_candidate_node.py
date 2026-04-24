@@ -3,7 +3,7 @@ from graph.nodes.common import run_node
 
 def choose_library_candidate_node(state: dict):
     def _impl(s: dict):
-        candidates = s.get("library_candidates", [])
+        candidates = s.get("library_candidates", []) or s.get("retrieved_papers", [])
         if not candidates:
             raise RuntimeError("no candidate papers found")
 

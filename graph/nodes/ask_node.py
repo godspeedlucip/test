@@ -15,6 +15,7 @@ def ask_node(state: dict):
                 context=ctx,
                 model=s.get("model"),
                 prompt=s.get("prompt"),
+                runtime=s.get("runtime"),
                 document_id=doc_id,
                 question=s.get("question") or s.get("user_query", ""),
             )
@@ -24,6 +25,7 @@ def ask_node(state: dict):
         return {
             "answer": result.data["answer"],
             "evidences": result.data["evidences"],
+            "llm_meta": result.meta.model_dump() if result.meta else None,
             "artifacts": s.get("artifacts", []) + [{"type": "qa", "payload": result.data}],
         }
 

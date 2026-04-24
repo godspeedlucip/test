@@ -6,6 +6,11 @@ Requires-Python: >=3.11
 Description-Content-Type: text/markdown
 Requires-Dist: pydantic<3,>=2.8
 Requires-Dist: langgraph>=0.2.20
+Requires-Dist: fastapi<1,>=0.111
+Requires-Dist: uvicorn<1,>=0.30
+Requires-Dist: pandas<3,>=2.2
+Requires-Dist: matplotlib<4,>=3.8
+Requires-Dist: openpyxl<4,>=3.1
 Provides-Extra: dev
 Requires-Dist: pytest>=8.2; extra == "dev"
 
@@ -79,3 +84,62 @@ python -m app.main
 - Tool 输出统一 `ToolResult`
 - 生成与评估解耦（generate -> judge）
 - 所有外部调用均可替换 adapter
+
+## LLMOps 治理（最小闭环）
+
+### 1. 如何新增 Prompt
+
+1. 在 `prompts/<prompt_name>/` 下新增版本文件，例如 `prompts/ask_paper/v2.txt`。
+2. 保持纯文本模板，`integrations/prompt_registry.py` 会按 `prompt_name + version` 加载。
+3. 如果调用侧未显式传版本，默认加载该 prompt 目录下最新版本（按版本名排序）。
+
+### 2. 如何升级版本
+
+1. 新增新版本文件（如 `v2.txt`），不要覆盖旧版本。
+2. 在调用入参中把 `PromptConfig.prompt_version` 改为新版本，或依赖默认版本切换。
+3. 建议同时运行 `python -m scripts.run_local_eval` 验证回归。
+
+### 3. 如何配置 Model Route
+
+1. 在 `integrations/model_router.py` 的 `InMemoryModelRouter` 中为 `task_type` 配置 `ModelRoutingPolicy`。
+2. `primary_model` 是主模型，`fallback_models` 是降级模型链。
+3. 执行链路通过 `integrations/llm_runtime.py` 接入路由与 fallback；主模型失败会自动尝试 fallback。
+
+### 4. 如何新增 Eval Case
+
+1. Tool Eval 样例：新增到 `evals/datasets/tools/<dataset_name>.<version>.json`。
+2. Workflow Eval 样例：新增到 `evals/datasets/workflows/<dataset_name>.<version>.json`。
+3. 每个样例至少包含 `sample_id` 和 `input`，可附加断言（tool）或 expect key（workflow）。
+4. 使用 `run_tool_eval` / `run_workflow_eval` 运行并查看结构化 `sample_results` 与聚合 `metrics`。
+
+---
+
+## FastAPI Service (Commit 1)
+
+Run the API server:
+
+```bash
+uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
+
+Health endpoints:
+
+- `GET /health`
+- `GET /observability/health`
+
+Local demo workflow entry is still available:
+
+```bash
+python -m app.main
+```
+
+## Compute Sandbox Notes
+
+- `execute_python_code` now runs code in a subprocess with timeout control.
+- A minimal safety layer blocks dangerous imports/calls (for example `socket`, `subprocess`, `os.system`, `shutil.rmtree`).
+- Network access is disabled in the sandbox process.
+- Tools return `ToolResult` consistently; invalid input/runtime infrastructure errors are wrapped as `ToolError`.
+- Artifacts are stored under `.artifacts/<run_id>/` and returned as both `file://` URI and absolute path.
+- `analyze_table` supports `csv`, `tsv`, and `xlsx`.
+- `generate_plot` supports `line`, `bar`, `scatter`, and `histogram`.
+- `execute_notebook_template` accepts `template_path` or `notebook_json`, injects parameters, executes code cells sequentially, and outputs an executed notebook artifact.

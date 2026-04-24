@@ -1,0 +1,18 @@
+{
+  "prompts": [
+    {
+      "prompt_name": "ask_paper",
+      "version": "v1",
+      "status": "deprecated",
+      "owner": "a",
+      "change_log": "old"
+    },
+    {
+      "prompt_name": "ask_paper",
+      "version": "v2",
+      "status": "active",
+      "owner": "b",
+      "change_log": "new"
+    }
+  ]
+}

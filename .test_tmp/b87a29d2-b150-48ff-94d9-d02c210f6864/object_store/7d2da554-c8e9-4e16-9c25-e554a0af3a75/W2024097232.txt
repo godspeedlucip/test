@@ -1,0 +1,18 @@
+Title: RULA: a survey method for the investigation of work-related upper limb disorders
+
+Abstract
+This document summarizes RULA: a survey method for the investigation of work-related upper limb disorders.
+
+Introduction
+The study focuses on RULA: a survey method for the investigation of work-related upper limb disorders.
+
+Method
+The method details are captured from available metadata for RULA: a survey method for the investigation of work-related upper limb disorders.
+
+Results
+Primary findings are pending full PDF provider integration; this local document preserves pipeline fidelity.
+
+References
+Venue: Applied Ergonomics (1993)
+DOI: 10.1016/0003-6870(93)90080-s
+PDF Source: None

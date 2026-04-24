@@ -1,0 +1,19 @@
+﻿providers:
+  llm:
+    mode: mock
+    model_name: gpt-4o-mini
+  trace_store:
+    mode: mock
+    root: .artifacts/traces
+  object_store:
+    mode: mock
+    root: .artifacts/object_store
+  vector_store:
+    mode: mock
+    root: .artifacts/vector_store
+  java_client:
+    mode: mock
+    base_url: ""
+    timeout_seconds: 5
+  academic:
+    mode: mock

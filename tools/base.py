@@ -9,6 +9,7 @@ from typing import Any
 from pydantic import BaseModel
 
 from domain.base import ToolError, ToolMeta, ToolResult
+from integrations.provider_errors import ProviderFailureError
 from observability.emitter import get_emitter
 from observability.recorder import get_recorder
 
@@ -119,10 +120,35 @@ class BaseToolHandler(ABC):
                     "prompt_name": result.meta.prompt_name,
                     "prompt_version": result.meta.prompt_version,
                     "token_usage": result.meta.token_usage,
+                    "duration_ms": result.meta.duration_ms,
                     "latency_ms": result.meta.latency_ms,
                 },
             )
             return result
+        except ProviderFailureError as exc:
+            latency_ms = int(time.time() * 1000) - started_ms
+            err = exc.tool_error
+            self.emitter.emit(
+                event_type="error_raised",
+                trace_id=trace_id,
+                parent_span_id=started_event.span_id,
+                payload={"tool_name": self.tool_name, "error_code": err.code},
+            )
+            return ToolResult(
+                success=False,
+                error=err,
+                data=None,
+                meta=ToolMeta(
+                    tool_name=self.tool_name,
+                    duration_ms=latency_ms,
+                    latency_ms=latency_ms,
+                    trace_id=trace_id,
+                    parent_span_id=started_event.span_id,
+                    model_name=model_name,
+                    prompt_name=prompt_name,
+                    prompt_version=prompt_version,
+                ),
+            )
         except Exception as exc:  # pragma: no cover
             err = wrap_exception(self.tool_name, exc)
             latency_ms = int(time.time() * 1000) - started_ms

@@ -1,0 +1,18 @@
+Title: Internet of Things in Industries: A Survey
+
+Abstract
+This document summarizes Internet of Things in Industries: A Survey.
+
+Introduction
+The study focuses on Internet of Things in Industries: A Survey.
+
+Method
+The method details are captured from available metadata for Internet of Things in Industries: A Survey.
+
+Results
+Primary findings are pending full PDF provider integration; this local document preserves pipeline fidelity.
+
+References
+Venue: IEEE Transactions on Industrial Informatics (2014)
+DOI: 10.1109/tii.2014.2300753
+PDF Source: None

@@ -4,7 +4,7 @@ from domain.context import RequestContext
 from domain.document import DocumentAnchor
 from domain.evidence import EvidenceSpan
 from domain.runtime import RuntimeConfig
-from integrations import get_vector_store
+from integrations import get_repo, get_vector_store
 from tools.base import BaseToolHandler, success_result
 
 
@@ -29,9 +29,15 @@ class RetrieveEvidenceHandler(BaseToolHandler):
     output_model = RetrieveEvidenceOutputData
 
     def run(self, payload: RetrieveEvidenceInput):
+        record = get_repo().documents.get(payload.document_id)
+        if record is None:
+            return success_result(
+                tool_name=self.tool_name,
+                data=RetrieveEvidenceOutputData(document_id=payload.document_id, evidences=[]),
+            )
         items = get_vector_store().query(f"doc-{payload.document_id}", payload.query, top_k=payload.top_k)
         evidences = []
-        for i, item in enumerate(items):
+        for item in items:
             page_no = item.metadata.get("page_no")
             section_title = item.metadata.get("section_title")
             if payload.page_filter and page_no not in payload.page_filter:
@@ -47,7 +53,7 @@ class RetrieveEvidenceHandler(BaseToolHandler):
                         section_title=section_title,
                         chunk_id=item.chunk_id,
                     ),
-                    score=max(0.1, 1.0 - i * 0.1),
+                    score=float(item.metadata.get("_score", 0.0)),
                 )
             )
         return success_result(tool_name=self.tool_name, data=RetrieveEvidenceOutputData(document_id=payload.document_id, evidences=evidences))

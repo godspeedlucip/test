@@ -1,4 +1,5 @@
-﻿from tools.academic.get_paper_details import get_paper_details_tool
+﻿from domain.base import ToolCapability
+from tools.academic.get_paper_details import get_paper_details_tool
 from tools.academic.resolve_paper_identity import resolve_paper_identity_tool
 from tools.academic.search_papers import search_papers_tool
 from tools.citation.export_bibtex import export_bibtex_tool
@@ -51,3 +52,39 @@ TOOL_REGISTRY = {
     "judge_agent_trajectory": judge_agent_trajectory_tool,
     "record_observability_event": record_observability_event_tool,
 }
+
+TOOL_CAPABILITIES: dict[str, ToolCapability] = {
+    "search_papers": ToolCapability(name="search_papers", category="academic", owner="python", cacheable=True),
+    "get_paper_details": ToolCapability(name="get_paper_details", category="academic", owner="python", cacheable=True),
+    "resolve_paper_identity": ToolCapability(name="resolve_paper_identity", category="academic", owner="python", cacheable=True),
+    "fetch_pdf": ToolCapability(name="fetch_pdf", category="document", owner="python", cacheable=True),
+    "parse_pdf": ToolCapability(name="parse_pdf", category="document", owner="python", cacheable=True),
+    "index_document": ToolCapability(name="index_document", category="document", owner="python", has_side_effect=True),
+    "get_document_status": ToolCapability(name="get_document_status", category="document", owner="python", cacheable=True),
+    "retrieve_evidence": ToolCapability(name="retrieve_evidence", category="document", owner="python", cacheable=True),
+    "ask_paper": ToolCapability(name="ask_paper", category="document", owner="python", judgeable=True),
+    "save_paper_to_library": ToolCapability(name="save_paper_to_library", category="library", owner="java", has_side_effect=True),
+    "list_library_papers": ToolCapability(name="list_library_papers", category="library", owner="java", cacheable=True),
+    "add_paper_note": ToolCapability(name="add_paper_note", category="library", owner="java", has_side_effect=True),
+    "tag_paper": ToolCapability(name="tag_paper", category="library", owner="java", has_side_effect=True),
+    "extract_paper_facts": ToolCapability(name="extract_paper_facts", category="synthesis", owner="python", judgeable=True),
+    "compare_papers": ToolCapability(name="compare_papers", category="synthesis", owner="python", judgeable=True),
+    "generate_related_work": ToolCapability(name="generate_related_work", category="synthesis", owner="python", judgeable=True),
+    "export_bibtex": ToolCapability(name="export_bibtex", category="citation", owner="python", has_side_effect=True),
+    "format_references": ToolCapability(name="format_references", category="citation", owner="python", cacheable=True),
+    "execute_python_code": ToolCapability(name="execute_python_code", category="compute", owner="python", has_side_effect=True),
+    "execute_notebook_template": ToolCapability(name="execute_notebook_template", category="compute", owner="python", has_side_effect=True),
+    "analyze_table": ToolCapability(name="analyze_table", category="compute", owner="python", cacheable=True),
+    "generate_plot": ToolCapability(name="generate_plot", category="compute", owner="python", has_side_effect=True),
+    "judge_answer_quality": ToolCapability(name="judge_answer_quality", category="judge", owner="python", judgeable=True),
+    "judge_agent_trajectory": ToolCapability(name="judge_agent_trajectory", category="judge", owner="python", judgeable=True),
+    "record_observability_event": ToolCapability(name="record_observability_event", category="observability", owner="platform", has_side_effect=True),
+}
+
+
+def get_tool_capability(tool_name: str) -> ToolCapability | None:
+    return TOOL_CAPABILITIES.get(tool_name)
+
+
+def get_tool_capability_map() -> dict[str, ToolCapability]:
+    return dict(TOOL_CAPABILITIES)

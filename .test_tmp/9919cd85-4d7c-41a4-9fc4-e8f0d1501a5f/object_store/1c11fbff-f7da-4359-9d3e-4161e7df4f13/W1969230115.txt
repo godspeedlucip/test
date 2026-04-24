@@ -1,0 +1,18 @@
+Title: A Comparative Study of Unit Root Tests with Panel Data and a New Simple Test
+
+Abstract
+This document summarizes A Comparative Study of Unit Root Tests with Panel Data and a New Simple Test.
+
+Introduction
+The study focuses on A Comparative Study of Unit Root Tests with Panel Data and a New Simple Test.
+
+Method
+The method details are captured from available metadata for A Comparative Study of Unit Root Tests with Panel Data and a New Simple Test.
+
+Results
+Primary findings are pending full PDF provider integration; this local document preserves pipeline fidelity.
+
+References
+Venue: Oxford Bulletin of Economics and Statistics (1999)
+DOI: 10.1111/1468-0084.0610s1631
+PDF Source: https://onlinelibrary.wiley.com/doi/pdfdirect/10.1111/1468-0084.0610s1631

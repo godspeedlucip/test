@@ -19,7 +19,9 @@ class FormatReferencesHandler(BaseToolHandler):
     output_model = FormatReferencesOutputData
 
     def run(self, payload: FormatReferencesInput):
-        return success_result(tool_name=self.tool_name, data=FormatReferencesOutputData(formatted=payload.references))
+        deduped = list(dict.fromkeys(payload.references))
+        formatted = [f"[{idx}] {ref}" for idx, ref in enumerate(deduped, start=1)]
+        return success_result(tool_name=self.tool_name, data=FormatReferencesOutputData(formatted=formatted))
 
 
 format_references_tool = FormatReferencesHandler()

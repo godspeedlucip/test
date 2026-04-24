@@ -1,0 +1,18 @@
+Title: what is the contribution? Study 1
+
+Abstract
+Abstract for what is the contribution? 1
+
+Introduction
+The study focuses on what is the contribution? Study 1.
+
+Method
+The method details are captured from available metadata for what is the contribution? Study 1.
+
+Results
+Primary findings are pending full PDF provider integration; this local document preserves pipeline fidelity.
+
+References
+Venue: MockConf (2024)
+DOI: None
+PDF Source: https://example.org/1.pdf

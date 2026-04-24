@@ -1,0 +1,18 @@
+Title: Co‐citation in the scientific literature: A new measure of the relationship between two documents
+
+Abstract
+This document summarizes Co‐citation in the scientific literature: A new measure of the relationship between two documents.
+
+Introduction
+The study focuses on Co‐citation in the scientific literature: A new measure of the relationship between two documents.
+
+Method
+The method details are captured from available metadata for Co‐citation in the scientific literature: A new measure of the relationship between two documents.
+
+Results
+Primary findings are pending full PDF provider integration; this local document preserves pipeline fidelity.
+
+References
+Venue: Journal of the American Society for Information Science (1973)
+DOI: 10.1002/asi.4630240406
+PDF Source: None

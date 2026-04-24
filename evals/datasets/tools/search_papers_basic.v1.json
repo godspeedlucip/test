@@ -1,0 +1,25 @@
+[
+  {
+    "sample_id": "tool-search-001",
+    "input": {
+      "query": "large language model",
+      "top_k": 3
+    },
+    "assert": {
+      "field": "total",
+      "op": "gte",
+      "value": 1
+    }
+  },
+  {
+    "sample_id": "tool-search-002",
+    "input": {
+      "query": "transformer architecture",
+      "top_k": 2
+    },
+    "assert": {
+      "field": "papers",
+      "op": "exists"
+    }
+  }
+]

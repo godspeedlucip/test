@@ -1,0 +1,18 @@
+Title: Experiences with User-Centered Design for the Tigres Workflow API
+
+Abstract
+This document summarizes Experiences with User-Centered Design for the Tigres Workflow API.
+
+Introduction
+The study focuses on Experiences with User-Centered Design for the Tigres Workflow API.
+
+Method
+The method details are captured from available metadata for Experiences with User-Centered Design for the Tigres Workflow API.
+
+Results
+Primary findings are pending full PDF provider integration; this local document preserves pipeline fidelity.
+
+References
+Venue: unknown venue (2014)
+DOI: 10.1109/escience.2014.56
+PDF Source: None
